@@ -25,9 +25,10 @@ jobs:
       - name: Build Docker Image
         working-directory: starter/frontend
         run: |
+          set -e
           docker build -t frontend-app:$GITHUB_SHA \
           --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} .
-          
+
   push-to-ecr:
     needs: build
     runs-on: ubuntu-latest
