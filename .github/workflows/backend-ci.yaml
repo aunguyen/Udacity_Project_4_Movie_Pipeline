@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'starter/backend/**'  # Only run when files in backend change
+      - 'starter/backend/**'
 
 jobs:
   lint:
