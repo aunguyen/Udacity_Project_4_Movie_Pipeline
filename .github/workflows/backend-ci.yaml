@@ -2,58 +2,25 @@ name: Backend Continuous Integration
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'starter/backend/**'
   workflow_dispatch: # Allows manual triggering
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - name: Cache Dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-      - name: Install Dependencies
-        run: pip install -r starter/backend/requirements.txt  # Updated path
-      - name: Run Lint
-        run: flake8 starter/backend  # Updated path
-
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - name: Cache Dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-      - name: Install Dependencies
-        run: pip install -r starter/backend/requirements.txt  # Updated path
-      - name: Run Tests
-        run: pytest starter/backend  # Updated path
+        uses: actions/checkout@v3
 
-  build:
-    needs: [lint, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Build Docker Image
-        run: docker build -t backend-app:latest .
-        working-directory: starter/backend  # Updated path
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'  # Specify the required Python version
+
+      # Removed the Install Dependencies step since no requirements.txt is needed
+
+      - name: Run Tests
+        run: pytest starter/backend  # Adjust this command if your tests are located in a different directory

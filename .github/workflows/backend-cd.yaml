@@ -2,9 +2,10 @@ name: Backend Continuous Deployment
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
     paths:
-      - 'backend/**'
+      - 'starter/backend/**'
   workflow_dispatch: # Allows manual triggering
 
 env:
@@ -21,8 +22,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-      - name: Install Dependencies
-        run: pip install -r backend/requirements.txt
       - name: Run Lint
         run: flake8 backend
 
