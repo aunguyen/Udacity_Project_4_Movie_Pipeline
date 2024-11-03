@@ -1,20 +1,24 @@
-# Use a Node.js base image
-FROM public.ecr.aws/docker/library/node:18.14.2-alpine3.17
+FROM  public.ecr.aws/docker/library/node:18.14.2-alpine3.17
 
-# Set the working directory inside the container to the current directory
-WORKDIR /frontend
+ARG REACT_APP_MOVIE_API_URL
+ENV REACT_APP_MOVIE_API_URL=${REACT_APP_MOVIE_API_URL}
 
-# Copy only the package.json and package-lock.json to install dependencies first (for caching)
+WORKDIR /app
+
+# Copy dependdency files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install packages
+RUN npm ci
 
-# Copy the rest of the application code to the container
+# Copy code
 COPY . .
 
-# Expose the port the app runs on
+# Build the app
+RUN npm run build
+
+# Expose the port used by the React app
 EXPOSE 3000
 
-# Command to start the app
-CMD ["npm", "start"]
+# Start the React app when the container starts
+CMD ["npm", "run", "serve"]
