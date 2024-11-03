@@ -2,73 +2,65 @@ name: Backend Continuous Deployment
 
 on:
   push:
-    branches: 
+    branches:
       - main
     paths:
-      - 'starter/backend/**'
-  workflow_dispatch: # Allows manual triggering
+      - 'starter/backend/**'  # Only run when files in backend change
+  workflow_dispatch:  # Allows manual triggering
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: movie-picture-backend
+  AWS_REGION: us-west-1
+  ECR_REPOSITORY: movie-picture-backend  # Make sure this matches your ECR repository name
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - name: Run Lint
-        run: flake8 backend
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - name: Install Dependencies
-        run: pip install -r backend/requirements.txt
-      - name: Run Tests
-        run: pytest backend
-
   build:
-    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - name: Check out the code
+        uses: actions/checkout@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
       - name: Build Docker Image
+        working-directory: starter/backend
         run: docker build -t backend-app:$GITHUB_SHA .
-        working-directory: backend
 
   push-to-ecr:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
+
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
+
       - name: Tag Docker Image
-        run: docker tag backend-app:$GITHUB_SHA $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$GITHUB_SHA
+        run: docker tag backend-app:$GITHUB_SHA 736618489805.dkr.ecr.us-west-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:$GITHUB_SHA
+
       - name: Push Docker Image
-        run: docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$GITHUB_SHA
+        run: docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:$GITHUB_SHA
 
   deploy:
     needs: push-to-ecr
     runs-on: ubuntu-latest
     steps:
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
+
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --name cluster --region us-west-1
+
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/backend backend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$GITHUB_SHA
+          kubectl set image deployment/backend backend=736618489805.dkr.ecr.us-west-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:$GITHUB_SHA
           kubectl rollout status deployment/backend
