@@ -10,7 +10,7 @@ on:
 
 env:
   AWS_REGION: us-west-1
-  ECR_REPOSITORY: movie-picture-backend  # Make sure this matches your ECR repository name
+  ECR_REPOSITORY: backend  # Make sure this matches your ECR repository name
 
 jobs:
   build:
