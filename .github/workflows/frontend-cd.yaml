@@ -72,8 +72,8 @@ jobs:
           IMAGE_TAG: latest  # Tag for the Docker image
           REPO_NAME: frontend  # Repository name in ECR
         run: |
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .  # Builds Docker image with specified tag
-          docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG  # Pushes Docker image to Amazon ECR
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://a8f4c1899aa0f42db88020e339dab8a6-1123560676.us-west-1.elb.amazonaws.com --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .
+          docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG
       - name: Set Up Kubernetes Config
         run: |
           aws eks update-kubeconfig --name cluster --region us-west-1  # Configures kubeconfig for accessing the EKS cluster
