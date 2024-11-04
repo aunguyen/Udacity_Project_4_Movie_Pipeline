@@ -1,87 +1,95 @@
-name: Frontend Continuous Deployment
+name: Auntk Frontend CD Pipeline
 
 on:
   push:
     branches:
-      - main  # Automatically triggers the workflow on pushes to the main branch
-  workflow_dispatch: # Allows manual start of the workflow from the GitHub Actions tab
+      - main  # Triggers automatically on pushes to the main branch
+  workflow_dispatch: # Allows for manual triggering from GitHub Actions UI
 
 jobs:
   Code_Analysis:
     runs-on: ubuntu-latest
-    environment: DevEnv  # Specifies the deployment environment
+    environment: DevEnv  # Specifies a custom environment (if defined in your account)
+
     steps:
       - name: Checkout The Source Code
-        uses: actions/checkout@v3  # Checks out the repository so code can be accessed in subsequent steps
+        uses: actions/checkout@v3  # Checks out the repository code for analysis
       - name: Set Up Node.js Environment
-        uses: actions/setup-node@v3  # Sets up Node.js environment for consistency
+        uses: actions/setup-node@v3  # Configures Node.js environment
         with:
-          node-version: 18  # Specifies the Node.js version
-          cache: 'npm'  # Enables npm caching for faster dependency installation
-          cache-dependency-path: starter/frontend/package-lock.json  # Points to package-lock.json for cache validity
+          node-version: 18  # Ensures a consistent Node.js version
+          cache: 'npm'  # Enables dependency caching for faster runs
+          cache-dependency-path: starter/frontend/package-lock.json  # Uses package-lock.json to validate cache
       - name: Install Requirements/Dependencies
-        working-directory: starter/frontend  # Specifies the working directory
-        run: npm ci  # Installs dependencies listed in package-lock.json
+        working-directory: starter/frontend  # Sets the directory for commands
+        run: npm ci  # Installs dependencies using clean install
       - name: Execute Lint Checks
-        working-directory: starter/frontend  # Specifies the working directory
-        run: npm run lint  # Runs linting to ensure code quality
+        working-directory: starter/frontend  # Ensures the command runs in the frontend directory
+        run: npm run lint  # Runs linting to check for code style issues
 
   Unit_Testing:
-    runs-on: ubuntu-latest  # Defines the OS environment
+    runs-on: ubuntu-latest  # Defines the OS for the job
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v3  # Checks out the repository
+        uses: actions/checkout@v3  # Pulls the code for testing
       - name: Set Up Node.js Environment
-        uses: actions/setup-node@v3  # Sets up Node.js environment for testing
+        uses: actions/setup-node@v3  # Configures Node.js for testing
         with:
-          node-version: 18  # Specifies the Node.js version
-          cache: 'npm'  # Uses npm cache for dependencies
-          cache-dependency-path: starter/frontend/package-lock.json  # Points to package-lock.json for cache validation
+          node-version: 18  # Consistent Node.js version across jobs
+          cache: 'npm'  # Reuses cached dependencies
+          cache-dependency-path: starter/frontend/package-lock.json  # Points to lock file for cache validation
       - name: Install Project Requirements/Dependencies
-        working-directory: starter/frontend  # Specifies the working directory
-        run: npm ci  # Installs dependencies in a clean environment
+        working-directory: starter/frontend  # Directory context
+        run: npm ci  # Clean install to ensure isolated environment
       - name: Execute Tests
-        working-directory: starter/frontend  # Specifies the working directory
-        run: npm run test  # Runs tests to verify code functionality
+        working-directory: starter/frontend  # Directory context
+        run: npm run test  # Runs the project's test suite
 
   Build_and_Deploy:
-    needs: [Code_Analysis, Unit_Testing]  # Ensures this job runs only if linting & tests pass
+    needs: [Code_Analysis, Unit_Testing]  # Dependent on successful Code Analysis and Testing jobs
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v3  # Checks out the repository
+        uses: actions/checkout@v3  # Retrieves repository code for building and deployment
+      
       - name: Set Up Node.js Environment
-        uses: actions/setup-node@v3  # Sets up Node.js environment for build
+        uses: actions/setup-node@v3  # Node.js setup for the build step
         with:
-          node-version: 18  # Specifies the Node.js version
-          cache: 'npm'  # Enables npm caching for faster installation
-          cache-dependency-path: starter/frontend/package-lock.json  # Uses package-lock.json for cache validation
+          node-version: 18  # Ensures consistency across jobs
+          cache: 'npm'  # Caches dependencies
+          cache-dependency-path: starter/frontend/package-lock.json  # Cache validated by package-lock.json
+      
       - name: Authenticate AWS
-        uses: aws-actions/configure-aws-credentials@v2  # Configures AWS credentials for secure access
+        uses: aws-actions/configure-aws-credentials@v2  # Configures AWS credentials
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Access Key stored in GitHub Secrets
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Secret Key stored in GitHub Secrets
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}  # Session token, if applicable
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key from GitHub Secrets
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Key from GitHub Secrets
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}  # Session token (if applicable)
           aws-region: ${{ secrets.AWS_REGION }}  # AWS region for deployment
+      
       - name: ECR Login
         id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2  # Logs into Amazon ECR to enable Docker image push
+        uses: aws-actions/amazon-ecr-login@v2  # Logs into Amazon ECR for Docker image push
+
       - name: Build Then Push Created Docker Image
-        working-directory: starter/frontend  # Sets working directory to frontend
+        working-directory: starter/frontend  # Directory context
         env:
-          IMAGE_TAG: latest  # Tag for the Docker image
-          REPO_NAME: frontend  # Repository name in ECR
+          IMAGE_TAG: latest  # Specifies the Docker image tag
+          REPO_NAME: frontend  # Name of the ECR repository
         run: |
           docker build --build-arg=REACT_APP_MOVIE_API_URL=http://a8f4c1899aa0f42db88020e339dab8a6-1123560676.us-west-1.elb.amazonaws.com --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .
-          docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+          docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG  # Pushes built image to ECR
+
       - name: Set Up Kubernetes Config
         run: |
-          aws eks update-kubeconfig --name cluster --region us-west-1  # Configures kubeconfig for accessing the EKS cluster
+          aws eks update-kubeconfig --name cluster --region us-west-1  # Sets kubeconfig for EKS cluster access
+
       - name: Deploy to EKS
-        working-directory: starter/frontend/k8s  # Specifies Kubernetes config directory
+        working-directory: starter/frontend/k8s  # Directory for Kubernetes manifests
         env:
-          IMAGE_TAG: latest  # Docker image tag for deployment
+          IMAGE_TAG: latest  # Docker image tag
           REPO_NAME: frontend  # ECR repository name
         run: |
-          kustomize edit set image frontend=736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG  # Updates deployment image in kustomize config
-          kustomize build | kubectl apply -f -  # Builds kustomize configuration and deploys to EKS
+          kustomize edit set image frontend=736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG  # Updates image in Kubernetes manifest
+          kustomize build | kubectl apply -f -  # Deploys changes to the EKS cluster
