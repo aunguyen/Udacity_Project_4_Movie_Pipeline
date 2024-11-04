@@ -70,8 +70,9 @@ jobs:
         env:
           IMAGE_TAG: latest  # Sets Docker image tag to latest
           REPO_NAME: backend  # Specifies ECR repository name
+          APP_URL: http://a8f4c1899aa0f42db88020e339dab8a6-1123560676.us-west-1.elb.amazonaws.com 
         run: |
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .  # Builds Docker image
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=$APP_URL --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .  # Builds Docker image
           docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG  # Pushes Docker image to Amazon ECR
       - name: Configure EKS Access
         run: |
