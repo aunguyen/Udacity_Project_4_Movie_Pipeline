@@ -1,4 +1,4 @@
-name: Auntk Backend CI Pipeline
+name: Backend Continuous Integration
 
 on:
   workflow_dispatch: # Allows manual start of the pipeline

@@ -1,4 +1,4 @@
-name: Auntk Frontend CD Pipeline
+name: Frontend Continuous Deployment
 
 on:
   push:

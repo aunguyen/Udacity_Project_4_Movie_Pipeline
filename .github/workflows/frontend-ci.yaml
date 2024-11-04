@@ -1,4 +1,4 @@
-name: Auntk Frontend CI Pipeline
+name: Frontend Continuous Integration
 
 on:
   pull_request:

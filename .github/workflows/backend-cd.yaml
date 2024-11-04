@@ -1,4 +1,4 @@
-name: Auntk Backend CD Pipeline
+name: Backend Continuous Deployment
 
 on:
   pull_request:
