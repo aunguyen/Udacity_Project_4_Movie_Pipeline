@@ -78,7 +78,7 @@ jobs:
           IMAGE_TAG: latest  # Specifies the Docker image tag
           REPO_NAME: frontend  # Name of the ECR repository
         run: |
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://a8f4c1899aa0f42db88020e339dab8a6-1123560676.us-west-1.elb.amazonaws.com --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .
+          docker build --build-arg REACT_APP_MOVIE_API_URL=http://a8f4c1899aa0f42db88020e339dab8a6-1123560676.us-west-1.elb.amazonaws.com --tag 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .
           docker push 736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG
 
       - name: Set Up Kubernetes Config
