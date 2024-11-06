@@ -1,3 +1,7 @@
+# Auntk-Project-4-URLs
+- **Frontend Service**: [Frontend URL](http://a05303e50c47f4ea5be710e44cf6ed7b-1230350599.us-west-1.elb.amazonaws.com)
+- **Backend Service**: [Backend URL](http://aa2afaa36bb204f09b91a5e19bb2cc7b-1177208098.us-west-1.elb.amazonaws.com)
+
 # Movie Picture Pipeline
 
 You've been brought on as the DevOps resource for a development team that manages a web application that is a catalog of Movie Picture movies. They're in dire need of automating their development workflows in hopes of accelerating their release cycle. They'd like to use Github Actions to automate testing, building and deploying their applications to an existing Kubernetes cluster.
@@ -469,7 +473,3 @@ kustomize build | kubectl apply -f -
 ## License
 
 [License](LICENSE.md)
-
-## Service URLs
-- **Frontend Service**: [Frontend URL](http://a459606890c5f403a961cbefa7717afe-1516288368.us-west-1.elb.amazonaws.com)
-- **Backend Service**: [Backend URL](http://a8f4c1899aa0f42db88020e339dab8a6-1123560676.us-west-1.elb.amazonaws.com)
