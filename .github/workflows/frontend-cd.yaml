@@ -93,3 +93,5 @@ jobs:
         run: |
           kustomize edit set image frontend=736618489805.dkr.ecr.us-west-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG  # Updates image in Kubernetes manifest
           kustomize build | kubectl apply -f -  # Deploys changes to the EKS cluster
+
+## I made this comment to trigger the CD run automatically
