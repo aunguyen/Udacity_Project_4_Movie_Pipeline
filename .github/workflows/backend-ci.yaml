@@ -56,8 +56,8 @@ jobs:
         run: pytest  # Execute pytest for unit tests
 
   docker_build:
-    runs-on: ubuntu-latest
     needs: [code_quality_check, unit_tests]  # Run only if linting and tests pass
+    runs-on: ubuntu-latest
 
     steps:
       - name: Retrieve Source Code
